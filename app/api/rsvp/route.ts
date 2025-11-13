@@ -60,27 +60,35 @@ function toResource(input: {
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const statusParam = url.searchParams.get('attendance');
+  try {
+    const url = new URL(request.url);
+    const statusParam = url.searchParams.get('attendance');
 
-  const filters: {
-    attendance?: 'HADIR' | 'TIDAK_HADIR';
-  } = {};
+    const filters: {
+      attendance?: 'HADIR' | 'TIDAK_HADIR';
+    } = {};
 
-  if (statusParam === 'hadir' || statusParam === 'tidak_hadir') {
-    filters.attendance = attendanceToPrisma[statusParam];
+    if (statusParam === 'hadir' || statusParam === 'tidak_hadir') {
+      filters.attendance = attendanceToPrisma[statusParam];
+    }
+
+    const items = await prisma.rsvp.findMany({
+      where: filters,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json({
+      data: items.map(toResource),
+    });
+  } catch (error) {
+    console.error('Failed to fetch RSVPs', error);
+    return NextResponse.json(
+      { error: 'Gagal memuat data RSVP.' },
+      { status: 500 },
+    );
   }
-
-  const items = await prisma.rsvp.findMany({
-    where: filters,
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  return NextResponse.json({
-    data: items.map(toResource),
-  });
 }
 
 type PostPayload = {
@@ -101,10 +109,7 @@ function parsePostPayload(body: PostPayload) {
   }
 
   const message =
-    typeof body.message === 'string' ? body.message.trim() : undefined;
-  if (!message || message.length < 5) {
-    errors.push('Ucapan wajib diisi minimal 5 karakter.');
-  }
+    typeof body.message === 'string' ? body.message.trim() : '';
 
   const attendance =
     body.attendance === 'hadir' || body.attendance === 'tidak_hadir'
@@ -138,7 +143,7 @@ function parsePostPayload(body: PostPayload) {
     errors.length === 0
       ? ({
           name: name!,
-          message: message!,
+          message: message,
           attendance: attendance!,
           guestCount,
           channel,
@@ -152,37 +157,45 @@ function parsePostPayload(body: PostPayload) {
 }
 
 export async function POST(request: Request) {
-  let body: PostPayload;
   try {
-    body = (await request.json()) as PostPayload;
-  } catch {
+    let body: PostPayload;
+    try {
+      body = (await request.json()) as PostPayload;
+    } catch {
+      return NextResponse.json(
+        { error: 'Payload tidak valid.' },
+        { status: 400 },
+      );
+    }
+
+    const result = parsePostPayload(body);
+    if (!result.values) {
+      return NextResponse.json(
+        { error: result.errors.join(' ') },
+        { status: 422 },
+      );
+    }
+
+    const record = await prisma.rsvp.create({
+      data: {
+        name: result.values.name,
+        message: result.values.message,
+        attendance: attendanceToPrisma[result.values.attendance],
+        guestCount: result.values.guestCount,
+        channel: channelToPrisma[result.values.channel],
+      },
+    });
+
     return NextResponse.json(
-      { error: 'Payload tidak valid.' },
-      { status: 400 },
+      { data: toResource(record) },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error('Failed to create RSVP', error);
+    return NextResponse.json(
+      { error: 'Gagal menyimpan data RSVP.' },
+      { status: 500 },
     );
   }
-
-  const result = parsePostPayload(body);
-  if (!result.values) {
-    return NextResponse.json(
-      { error: result.errors.join(' ') },
-      { status: 422 },
-    );
-  }
-
-  const record = await prisma.rsvp.create({
-    data: {
-      name: result.values.name,
-      message: result.values.message,
-      attendance: attendanceToPrisma[result.values.attendance],
-      guestCount: result.values.guestCount,
-      channel: channelToPrisma[result.values.channel],
-    },
-  });
-
-  return NextResponse.json(
-    { data: toResource(record) },
-    { status: 201 },
-  );
 }
 

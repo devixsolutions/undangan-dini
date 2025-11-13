@@ -61,12 +61,10 @@ export default function RSVPSection() {
 
   const isValid = useMemo(() => {
     const trimmedName = formState.name.trim();
-    const trimmedMessage = formState.message.trim();
     const guestValue = Number.parseInt(formState.guestCount, 10);
 
     return (
       trimmedName.length >= 3 &&
-      trimmedMessage.length >= 5 &&
       formState.attendance !== '' &&
       Number.isFinite(guestValue) &&
       guestValue >= 0
@@ -225,7 +223,7 @@ export default function RSVPSection() {
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.7, ease: 'easeOut' }}
         onSubmit={handleSubmit}
-        className="mt-12 w-full max-w-3xl space-y-6 rounded-3xl border border-[#eadacc] bg-white/80 p-8 shadow-[0_18px_40px_-25px_rgba(111,54,38,0.35)] backdrop-blur sm:mt-16 sm:p-10"
+        className="relative z-10 mt-12 w-full max-w-3xl space-y-6 rounded-3xl border border-[#eadacc] bg-white/80 p-8 shadow-[0_18px_40px_-25px_rgba(111,54,38,0.35)] backdrop-blur sm:mt-16 sm:p-10"
       >
         <div className="grid gap-6 sm:grid-cols-2">
           <label className="flex flex-col gap-2 text-left">
@@ -299,11 +297,10 @@ export default function RSVPSection() {
             placeholder="Tulis ucapan dan doa terbaik untuk kedua mempelai di sini"
             rows={4}
             className="rounded-2xl border border-[#eadacc] bg-white/90 px-4 py-3 text-sm text-[#5d4a3a] outline-none transition focus:border-[#8b0000] focus:ring-2 focus:ring-[#8b0000]/20 sm:text-base"
-            required
           />
         </label>
 
-        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
           <p className="text-xs text-[#7c6651] sm:text-sm">
             Mohon klik tombol kirim setelah mengisi data. Terima kasih telah
             meluangkan waktu untuk berbagi doa dan konfirmasi kehadiran Anda.
@@ -311,7 +308,7 @@ export default function RSVPSection() {
           <button
             type="submit"
             disabled={!isValid || isSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#8b0000] px-8 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-white shadow-lg shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] disabled:cursor-not-allowed disabled:bg-[#b57a7a] disabled:shadow-none sm:text-base"
+            className="relative z-20 inline-flex items-center justify-center gap-2 rounded-full bg-[#8b0000] px-8 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-white shadow-lg shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] disabled:cursor-not-allowed disabled:bg-[#b57a7a] disabled:opacity-60 disabled:shadow-none disabled:hover:translate-y-0 sm:text-base"
           >
             {isSubmitting ? 'Mengirim...' : 'Kirim RSVP'}
           </button>
