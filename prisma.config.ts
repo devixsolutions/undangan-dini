@@ -6,15 +6,8 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  engine: "classic",
+  engine: "classic", // biar Prisma pakai query engine lama yang stabil di Vercel
   datasource: {
     url: env("DATABASE_URL"),
-  },
-  generator: {
-    client: {
-      provider: "prisma-client-js",
-      output: "./lib/generated/prisma",
-      binaryTargets: ["native", "rhel-openssl-3.0.x"],
-    },
   },
 });
