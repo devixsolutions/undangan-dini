@@ -126,12 +126,28 @@ function parsePostPayload(body: PostPayload) {
       ? body.channel
       : 'website';
 
+  type ParsedValues = {
+    name: string;
+    message: string;
+    attendance: AttendanceInput;
+    guestCount: number;
+    channel: ChannelInput;
+  };
+
+  const values =
+    errors.length === 0
+      ? ({
+          name: name!,
+          message: message!,
+          attendance: attendance!,
+          guestCount,
+          channel,
+        } satisfies ParsedValues)
+      : null;
+
   return {
     errors,
-    values:
-      errors.length === 0
-        ? { name, message, attendance, guestCount, channel }
-        : null,
+    values,
   } as const;
 }
 
