@@ -1,6 +1,6 @@
 'use client';
 
-import React from "react";
+import React, { Suspense } from "react";
 import Image from "next/image";
 import Greetings from "@/components/greetings";
 import { useInvitation } from "@/components/invitation-context";
@@ -30,7 +30,11 @@ const Page = () => {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        {!isOpen && <Cover />}
+        {!isOpen && (
+          <Suspense fallback={<div className="min-h-screen" />}>
+            <Cover />
+          </Suspense>
+        )}
         {isOpen && (
           <>
             <section className="flex justify-center bg-[#f9f6f1]/90">
