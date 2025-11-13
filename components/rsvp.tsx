@@ -1,44 +1,117 @@
 
-'use client';
+import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 
-import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+type AttendanceValue = '' | 'hadir' | 'tidak_hadir';
+type ChannelValue = 'website' | 'whatsapp' | 'manual';
 
 type FormState = {
   name: string;
   message: string;
-  attendance: "" | "hadir" | "tidak_hadir";
+  attendance: AttendanceValue;
+  guestCount: string;
 };
 
-type Submission = FormState & {
+type Submission = {
   id: string;
+  name: string;
+  message: string;
+  attendance: Exclude<AttendanceValue, ''>;
+  guestCount: number;
+  channel: ChannelValue;
   createdAt: string;
+  updatedAt: string;
 };
 
-const attendanceOptions = [
-  { value: "hadir", label: "InsyaAllah Hadir" },
-  { value: "tidak_hadir", label: "Belum Bisa Hadir" },
+const attendanceOptions: Array<{ value: Exclude<AttendanceValue, ''>; label: string }> = [
+  { value: 'hadir', label: 'InsyaAllah Hadir' },
+  { value: 'tidak_hadir', label: 'Belum Bisa Hadir' },
 ];
+
+const attendanceLabels: Record<Exclude<AttendanceValue, ''>, string> = {
+  hadir: 'InsyaAllah Hadir',
+  tidak_hadir: 'Belum Bisa Hadir',
+};
+
+const channelLabels: Record<ChannelValue, string> = {
+  website: 'Website',
+  whatsapp: 'WhatsApp',
+  manual: 'Input Admin',
+};
+
+const dateFormatter = new Intl.DateTimeFormat('id-ID', {
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
 export default function RSVPSection() {
   const [formState, setFormState] = useState<FormState>({
-    name: "",
-    message: "",
-    attendance: "",
+    name: '',
+    message: '',
+    attendance: '',
+    guestCount: '1',
   });
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const isValid = useMemo(() => {
     const trimmedName = formState.name.trim();
     const trimmedMessage = formState.message.trim();
+    const guestValue = Number.parseInt(formState.guestCount, 10);
+
     return (
       trimmedName.length >= 3 &&
       trimmedMessage.length >= 5 &&
-      formState.attendance !== ""
+      formState.attendance !== '' &&
+      Number.isFinite(guestValue) &&
+      guestValue >= 0
     );
   }, [formState]);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch('/api/rsvp', {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          throw new Error('Gagal memuat data RSVP.');
+        }
+
+        const payload = (await response.json()) as { data: Submission[] };
+
+        if (active) {
+          setSubmissions(payload.data);
+        }
+      } catch (err) {
+        if (active) {
+          console.error('Failed to fetch RSVPs', err);
+          setError('Tidak dapat memuat data RSVP saat ini.');
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -47,17 +120,19 @@ export default function RSVPSection() {
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAttendanceChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setFormState((prev) => ({ ...prev, attendance: event.target.value as "hadir" | "tidak_hadir" }));
+  const handleAttendanceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormState((prev) => ({
+      ...prev,
+      attendance: event.target.value as Exclude<AttendanceValue, ''>,
+    }));
   };
 
   const resetForm = () => {
     setFormState({
-      name: "",
-      message: "",
-      attendance: "",
+      name: '',
+      message: '',
+      attendance: '',
+      guestCount: '1',
     });
   };
 
@@ -70,22 +145,41 @@ export default function RSVPSection() {
 
     setIsSubmitting(true);
     setFeedback(null);
+    setError(null);
 
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 600));
+      const guestCount = Number.parseInt(formState.guestCount, 10);
+      const response = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formState.name.trim(),
+          message: formState.message.trim(),
+          attendance: formState.attendance,
+          guestCount: Number.isFinite(guestCount) && guestCount >= 0 ? guestCount : 0,
+          channel: 'website',
+        }),
+      });
 
-      const submission: Submission = {
-        ...formState,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error ?? 'Gagal mengirim RSVP.');
+      }
 
-      setSubmissions((prev) => [submission, ...prev].slice(0, 6));
-      setFeedback("Terima kasih! RSVP Anda sudah kami terima.");
+      const payload = (await response.json()) as { data: Submission };
+
+      setSubmissions((prev) => [payload.data, ...prev]);
+      setFeedback('Terima kasih! RSVP Anda sudah kami terima.');
       resetForm();
-    } catch (error) {
-      console.error("Failed to submit RSVP:", error);
-      setFeedback("Maaf, terjadi kendala. Silakan coba kembali.");
+    } catch (err) {
+      console.error('Failed to submit RSVP', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Maaf, terjadi kendala. Silakan coba kembali.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +195,7 @@ export default function RSVPSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 0.25, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
           className="hidden h-32 w-full max-w-lg rounded-full border border-[#8b0000]/10 bg-white/60 blur-3xl sm:block"
         />
       </div>
@@ -110,7 +204,7 @@ export default function RSVPSection() {
         initial={{ opacity: 0, y: 32 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
         className="flex flex-col items-center gap-4 text-center"
       >
         <span className="font-display text-xs uppercase tracking-[0.45em] text-[#a7723a] sm:text-sm">
@@ -129,7 +223,7 @@ export default function RSVPSection() {
         initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
         onSubmit={handleSubmit}
         className="mt-12 w-full max-w-3xl space-y-6 rounded-3xl border border-[#eadacc] bg-white/80 p-8 shadow-[0_18px_40px_-25px_rgba(111,54,38,0.35)] backdrop-blur sm:mt-16 sm:p-10"
       >
@@ -150,35 +244,49 @@ export default function RSVPSection() {
             />
           </label>
 
-          <fieldset className="flex flex-col gap-3">
-            <legend className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
-              Konfirmasi Kehadiran
-            </legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {attendanceOptions.map((option) => (
-                <label
-                  key={option.value}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm sm:text-base ${
-                    formState.attendance === option.value
-                      ? "border-[#8b0000] bg-[#8b0000]/10 text-[#5d4a3a]"
-                      : "border-[#eadacc] bg-white/90 text-[#7c6651]"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="attendance"
-                    value={option.value}
-                    checked={formState.attendance === option.value}
-                    onChange={handleAttendanceChange}
-                    className="h-4 w-4 accent-[#8b0000]"
-                    required
-                  />
-                  <span className="font-medium">{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
+          <label className="flex flex-col gap-2 text-left">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
+              Jumlah Tamu
+            </span>
+            <input
+              type="number"
+              name="guestCount"
+              min={0}
+              value={formState.guestCount}
+              onChange={handleChange}
+              className="rounded-2xl border border-[#eadacc] bg-white/90 px-4 py-3 text-sm text-[#5d4a3a] outline-none transition focus:border-[#8b0000] focus:ring-2 focus:ring-[#8b0000]/20 sm:text-base"
+            />
+          </label>
         </div>
+
+        <fieldset className="flex flex-col gap-3">
+          <legend className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
+            Konfirmasi Kehadiran
+          </legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {attendanceOptions.map((option) => (
+              <label
+                key={option.value}
+                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm sm:text-base ${
+                  formState.attendance === option.value
+                    ? 'border-[#8b0000] bg-[#8b0000]/10 text-[#5d4a3a]'
+                    : 'border-[#eadacc] bg-white/90 text-[#7c6651]'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="attendance"
+                  value={option.value}
+                  checked={formState.attendance === option.value}
+                  onChange={handleAttendanceChange}
+                  className="h-4 w-4 accent-[#8b0000]"
+                  required
+                />
+                <span className="font-medium">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <label className="flex flex-col gap-2 text-left">
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
@@ -205,7 +313,7 @@ export default function RSVPSection() {
             disabled={!isValid || isSubmitting}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-[#8b0000] px-8 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-white shadow-lg shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] disabled:cursor-not-allowed disabled:bg-[#b57a7a] disabled:shadow-none sm:text-base"
           >
-            {isSubmitting ? "Mengirim..." : "Kirim RSVP"}
+            {isSubmitting ? 'Mengirim...' : 'Kirim RSVP'}
           </button>
         </div>
 
@@ -214,19 +322,35 @@ export default function RSVPSection() {
             {feedback}
           </p>
         ) : null}
+
+        {error ? (
+          <p className="rounded-2xl bg-[#faddd9]/80 px-4 py-3 text-center text-sm font-medium text-[#8b0000] sm:text-base">
+            {error}
+          </p>
+        ) : null}
       </motion.form>
 
-      {submissions.length > 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
-          className="mt-14 w-full max-w-3xl space-y-4 rounded-3xl border border-[#eadacc] bg-white/70 p-8 shadow-[0_18px_40px_-25px_rgba(111,54,38,0.35)] backdrop-blur sm:mt-16"
-        >
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
+        className="mt-14 w-full max-w-3xl space-y-4 rounded-3xl border border-[#eadacc] bg-white/70 p-8 shadow-[0_18px_40px_-25px_rgba(111,54,38,0.35)] backdrop-blur sm:mt-16"
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-center font-display text-xs uppercase tracking-[0.35em] text-[#a7723a] sm:text-sm">
             Ucapan Terbaru
           </h3>
+          <p className="text-center text-xs text-[#7c6651] sm:text-sm sm:text-right">
+            {isLoading
+              ? 'Memuat data RSVP...'
+              : submissions.length > 0
+                ? `${submissions.length} ucapan tersimpan`
+                : 'Belum ada RSVP tercatat.'}
+          </p>
+        </div>
+
+        {submissions.length > 0 ? (
           <div className="space-y-4">
             {submissions.map((item) => (
               <article
@@ -235,22 +359,21 @@ export default function RSVPSection() {
               >
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.25em] text-[#a7723a] sm:text-sm">
                   <span>{item.name}</span>
-                  <span>
-                    {item.attendance === "hadir"
-                      ? "InsyaAllah Hadir"
-                      : "Belum Bisa Hadir"}
-                  </span>
+                  <span>{attendanceLabels[item.attendance]}</span>
                 </div>
                 <p className="mt-3 text-sm leading-relaxed text-[#7c6651] sm:text-base">
                   {item.message}
                 </p>
+                <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[#a7723a] sm:text-sm">
+                  <span>{channelLabels[item.channel]}</span>
+                  <span>{item.guestCount > 0 ? `${item.guestCount} tamu` : 'Tanpa rombongan'}</span>
+                  <span>{dateFormatter.format(new Date(item.createdAt))}</span>
+                </div>
               </article>
             ))}
           </div>
-        </motion.div>
-      ) : null}
+        ) : null}
+      </motion.div>
     </section>
   );
 }
-
-

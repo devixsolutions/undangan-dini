@@ -1,11 +1,83 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useInvitation } from "@/components/invitation-context";
 
+const LOCAL_STORAGE_KEY = 'dashboard-invite-tool-state';
+
+type StoredGuest = {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: number;
+};
+
+function getGuestNameFromSlug(slug: string): string | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!storedValue) {
+      return null;
+    }
+
+    const parsed = JSON.parse(storedValue) as {
+      guests?: unknown;
+    };
+
+    if (Array.isArray(parsed.guests)) {
+      const guest = parsed.guests.find(
+        (item) =>
+          item &&
+          typeof item === 'object' &&
+          typeof (item as { slug?: unknown }).slug === 'string' &&
+          (item as { slug: string }).slug === slug,
+      ) as StoredGuest | undefined;
+
+      if (guest && typeof guest.name === 'string') {
+        return guest.name;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to get guest name from slug', err);
+  }
+
+  return null;
+}
+
+function formatSlugToName(slug: string): string {
+  return slug
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 export default function Cover() {
   const { isOpen, openInvitation } = useInvitation();
+  const searchParams = useSearchParams();
+  const [guestName, setGuestName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const slug = searchParams.get('to');
+    if (!slug) {
+      setGuestName(null);
+      return;
+    }
+
+    const decodedSlug = decodeURIComponent(slug);
+    const nameFromStorage = getGuestNameFromSlug(decodedSlug);
+    
+    if (nameFromStorage) {
+      setGuestName(nameFromStorage);
+    } else {
+      setGuestName(formatSlugToName(decodedSlug));
+    }
+  }, [searchParams]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -95,14 +167,30 @@ export default function Cover() {
               Dini Jumartini
             </motion.h2>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.9, ease: "easeOut" }}
-              className="max-w-xl text-base text-[#7c6651] sm:text-lg"
-            >
-              Dengan segala kerendahan hati, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.
-            </motion.p>
+            {guestName ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.85, ease: "easeOut" }}
+                className="max-w-xl space-y-2"
+              >
+                <p className="text-base font-medium text-[#8b0000] sm:text-lg">
+                  Kepada Yth. {guestName}
+                </p>
+                <p className="text-base text-[#7c6651] sm:text-lg">
+                  Dengan segala kerendahan hati, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.
+                </p>
+              </motion.div>
+            ) : (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.9, ease: "easeOut" }}
+                className="max-w-xl text-base text-[#7c6651] sm:text-lg"
+              >
+                Dengan segala kerendahan hati, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.
+              </motion.p>
+            )}
 
             <motion.button
               type="button"

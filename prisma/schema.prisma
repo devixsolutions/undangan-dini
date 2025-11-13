@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AttendanceStatus {
+  HADIR
+  TIDAK_HADIR
+}
+
+enum RSVPChannel {
+  WEBSITE
+  WHATSAPP
+  MANUAL
+}
+
+model Rsvp {
+  id          String           @id @default(uuid())
+  name        String
+  message     String
+  attendance  AttendanceStatus
+  channel     RSVPChannel      @default(WEBSITE)
+  guestCount  Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("rsvps")
+  @@index([createdAt], name: "rsvps_created_at_idx")
+  @@index([attendance], name: "rsvps_attendance_idx")
+}
