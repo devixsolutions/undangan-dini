@@ -61,6 +61,15 @@ function toResource(input: {
 
 export async function GET(request: Request) {
   try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL is not configured');
+      return NextResponse.json(
+        { error: 'Database configuration error.' },
+        { status: 500 },
+      );
+    }
+
     const url = new URL(request.url);
     const statusParam = url.searchParams.get('attendance');
 
@@ -84,8 +93,20 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Failed to fetch RSVPs', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack });
+    
+    // Check for common Prisma errors
+    if (errorMessage.includes('P1001') || errorMessage.includes('Can\'t reach database')) {
+      return NextResponse.json(
+        { error: 'Database connection error. Please check your database configuration.' },
+        { status: 500 },
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Gagal memuat data RSVP.' },
+      { error: 'Gagal memuat data RSVP.', details: process.env.NODE_ENV === 'development' ? errorMessage : undefined },
       { status: 500 },
     );
   }
@@ -158,6 +179,15 @@ function parsePostPayload(body: PostPayload) {
 
 export async function POST(request: Request) {
   try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL is not configured');
+      return NextResponse.json(
+        { error: 'Database configuration error.' },
+        { status: 500 },
+      );
+    }
+
     let body: PostPayload;
     try {
       body = (await request.json()) as PostPayload;
@@ -192,8 +222,20 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Failed to create RSVP', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack });
+    
+    // Check for common Prisma errors
+    if (errorMessage.includes('P1001') || errorMessage.includes('Can\'t reach database')) {
+      return NextResponse.json(
+        { error: 'Database connection error. Please check your database configuration.' },
+        { status: 500 },
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Gagal menyimpan data RSVP.' },
+      { error: 'Gagal menyimpan data RSVP.', details: process.env.NODE_ENV === 'development' ? errorMessage : undefined },
       { status: 500 },
     );
   }
