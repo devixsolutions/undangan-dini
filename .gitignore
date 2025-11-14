@@ -42,3 +42,6 @@ next-env.d.ts
 
 /lib/*
 !/lib/generated/prisma
+!/lib/data.ts
+!/lib/utils.ts
+!/lib/prisma.ts
