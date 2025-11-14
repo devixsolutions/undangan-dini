@@ -18,16 +18,19 @@ import {
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
 import { useInvitation } from '@/components/invitation-context';
-
-const navItems = [
-  { label: 'Mempelai', href: '#mempelai', icon: Users2 },
-  { label: 'Acara', href: '#acara', icon: CalendarDays },
-  { label: 'Hadiah', href: '#gift', icon: Gift },
-  { label: 'Ucapan', href: '#rsvp', icon: MessageCircle },
-];
+import { getWeddingData } from '@/lib/data';
 
 export default function BottomNav() {
   const { isOpen } = useInvitation();
+  const data = getWeddingData();
+  
+  const navItems = [
+    { label: data.navigation.items[0].label, href: data.navigation.items[0].href, icon: Users2 },
+    { label: data.navigation.items[1].label, href: data.navigation.items[1].href, icon: CalendarDays },
+    { label: data.navigation.items[2].label, href: data.navigation.items[2].href, icon: Gift },
+    { label: data.navigation.items[3].label, href: data.navigation.items[3].href, icon: MessageCircle },
+  ];
+  
   const [active, setActive] = useState(navItems[0]?.href ?? '');
 
   useEffect(() => {
@@ -40,6 +43,23 @@ export default function BottomNav() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setActive(href);
+    
+    const targetId = href.replace('#', '');
+    const targetElement = document.getElementById(targetId);
+    
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      // Update URL hash without triggering scroll
+      window.history.pushState(null, '', href);
+    }
+  };
 
   if (!isOpen) {
     return null;
@@ -60,7 +80,7 @@ export default function BottomNav() {
                 <NavigationMenuLink asChild>
                   <a
                     href={href}
-                    onClick={() => setActive(href)}
+                    onClick={(e) => handleNavClick(e, href)}
                     className={cn(
                       'flex h-full flex-col items-center gap-1 rounded-xl px-2 py-2 text-center text-[#9f8472] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b0000] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
                       isActive && 'text-[#8b0000]'

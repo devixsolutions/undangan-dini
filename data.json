@@ -1,0 +1,226 @@
+{
+  "wedding": {
+    "groom": {
+      "nickname": "Yanto",
+      "fullName": "Kusyanto",
+      "parentPrefix": "Putra dari",
+      "parents": ["Bapak Cahyan", "Ibu Siti Rohmah"]
+    },
+    "bride": {
+      "nickname": "Dini",
+      "fullName": "Dini Jumartini",
+      "parentPrefix": "Putri dari",
+      "parents": ["Bapak Yoyo Wahyo", "Ibu Aah Sariah"]
+    },
+    "coupleName": "Yanto & Dini",
+    "event": {
+      "title": "Akad & Resepsi Yanto & Dini",
+      "day": "Minggu",
+      "date": "7 Desember 2025",
+      "dateISO": "2025-12-07T08:00:00+07:00",
+      "durationHours": 3,
+      "location": "Jalan raya Bojong danas, Jayagiri, Kec. Panumbangan, Kabupaten Ciamis, Jawa Barat 46263",
+      "locationShort": "Jalan raya Bojong danas, Jayagiri, Kec. Panumbangan, Kabupaten Ciamis, Jawa Barat 46263",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=V67J+W97+Jalan+raya+Bojong+danas+Jayagiri+Kec+Panumbangan+Kabupaten+Ciamis+Jawa+Barat+46263",
+      "schedule": [
+        {
+          "title": "Akad Nikah",
+          "time": "08.00 - 09.00 WIB",
+          "description": "Prosesi sakral pernikahan dengan keluarga inti dan saksi."
+        },
+        {
+          "title": "Resepsi Pernikahan",
+          "time": "10.00 - 13.00 WIB",
+          "description": "Silaturahmi sekaligus ungkapan rasa syukur bersama kerabat dan sahabat."
+        }
+      ]
+    }
+  },
+  "cover": {
+    "title": "Wedding Invitation",
+    "invitationText": "Dengan segala kerendahan hati, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.",
+    "buttonText": "Buka Undangan",
+    "assets": {
+      "ornamentTop": "/assets/ornamen-atas.jpg",
+      "flowerBottom": "/assets/bunga-1.svg"
+    }
+  },
+  "greetings": {
+    "title": "Wedding Invitation",
+    "weddingDate": "Minggu, 7 Desember 2025",
+    "location": "V67J+W97, Jalan raya Bojong danas, Jayagiri, Kec. Panumbangan, Kabupaten Ciamis, Jawa Barat 46263"
+  },
+  "catin": {
+    "title": "Mempelai",
+    "heading": "Catin Kami",
+    "description": "Dengan ridho Allah SWT serta doa restu dari orang tua dan sahabat semua, kami mempersembahkan seuntai kisah yang akan kami lanjutkan menuju pernikahan."
+  },
+  "quotes": {
+    "verse": "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir.",
+    "surah": "QS. Ar-Rum Ayat 21",
+    "footer": "Quran Surah Ar-Rum"
+  },
+  "date": {
+    "title": "Save The Date",
+    "heading": "Hitung Mundur Menuju Hari Bahagia",
+    "buttonText": "Simpan Tanggalnya",
+    "labels": {
+      "days": "Hari",
+      "hours": "Jam",
+      "minutes": "Menit",
+      "seconds": "Detik"
+    },
+    "icsDescription": "Kami akan sangat senang jika Anda dapat hadir dan memberi doa restu."
+  },
+  "acara": {
+    "title": "Rangkaian Acara",
+    "heading": "Hari Bahagia Kami",
+    "buttonText": "Buka Google Maps"
+  },
+  "gift": {
+    "title": "Wedding Gift",
+    "heading": "Kado Kasih & Doa",
+    "description": "Kehadiran dan doa restu Anda sudah menjadi hadiah terindah bagi kami. Namun jika berkenan mengirimkan tanda kasih secara virtual, berikut informasi rekening kami.",
+    "physicalGift": {
+      "address": "Jalan raya Bojong danas, Jayagiri, Kec. Panumbangan, Kabupaten Ciamis, Jawa Barat 46263",
+      "note": "Silakan hubungi kami untuk koordinasi pengiriman."
+    },
+    "accounts": [
+      {
+        "bank": "BCA",
+        "accountNumber": "1234567890",
+        "accountName": "Kusyanto",
+        "description": "Transfer hadiah untuk mempelai pria."
+      },
+      {
+        "bank": "BRI",
+        "accountNumber": "9876543210",
+        "accountName": "Dini Jumartini",
+        "description": "Transfer hadiah untuk mempelai wanita."
+      }
+    ],
+    "copyButtonText": "Salin Rekening",
+    "copiedButtonText": "Disalin!"
+  },
+  "rsvp": {
+    "title": "RSVP",
+    "heading": "Konfirmasi Kehadiran",
+    "description": "Sampaikan rencana kehadiran, ucapan, dan doa restu Anda kepada kami. RSVP ini membantu kami menyiapkan hari bahagia dengan lebih baik.",
+    "form": {
+      "fields": {
+        "name": {
+          "label": "Nama Lengkap",
+          "placeholder": "Tuliskan nama Anda"
+        },
+        "guestCount": {
+          "label": "Jumlah Tamu"
+        },
+        "attendance": {
+          "label": "Konfirmasi Kehadiran",
+          "options": [
+            {
+              "value": "hadir",
+              "label": "InsyaAllah Hadir"
+            },
+            {
+              "value": "tidak_hadir",
+              "label": "Belum Bisa Hadir"
+            }
+          ]
+        },
+        "message": {
+          "label": "Ucapan & Doa",
+          "placeholder": "Tulis ucapan dan doa terbaik untuk kedua mempelai di sini"
+        }
+      },
+      "buttonText": "Kirim RSVP",
+      "buttonTextSubmitting": "Mengirim...",
+      "helperText": "Mohon klik tombol kirim setelah mengisi data. Terima kasih telah meluangkan waktu untuk berbagi doa dan konfirmasi kehadiran Anda.",
+      "successMessage": "Terima kasih! RSVP Anda sudah kami terima.",
+      "errorMessages": {
+        "fetch": "Gagal memuat data RSVP.",
+        "fetchGeneric": "Tidak dapat memuat data RSVP saat ini.",
+        "submit": "Gagal mengirim RSVP.",
+        "submitGeneric": "Maaf, terjadi kendala. Silakan coba kembali.",
+        "audio": "Gagal memuat musik.",
+        "playback": "Pemutaran musik diblokir. Silakan coba lagi."
+      }
+    },
+    "submissions": {
+      "title": "Ucapan Terbaru",
+      "loading": "Memuat data RSVP...",
+      "empty": "Belum ada RSVP tercatat.",
+      "count": "ucapan tersimpan",
+      "labels": {
+        "hadir": "InsyaAllah Hadir",
+        "tidak_hadir": "Belum Bisa Hadir",
+        "website": "Website",
+        "whatsapp": "WhatsApp",
+        "manual": "Input Admin",
+        "noGuests": "Tanpa rombongan",
+        "guests": "tamu"
+      }
+    }
+  },
+  "footer": {
+    "heading": "Terima Kasih",
+    "messages": [
+      "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu untuk keberkahan pernikahan kami.",
+      "Atas doa dan restunya, kami ucapkan terima kasih."
+    ],
+    "credits": {
+      "text": "Digital Invitation by Devix",
+      "website": "https://devixsolutions.tech",
+      "logo": "/assets/devix.svg"
+    },
+    "social": {
+      "instagram": {
+        "url": "https://www.instagram.com",
+        "label": "Instagram"
+      },
+      "whatsapp": {
+        "url": "https://wa.me/6281234567890",
+        "label": "WhatsApp"
+      },
+      "email": {
+        "url": "mailto:halo@devixsolution.tech",
+        "label": "Email"
+      }
+    },
+    "copyright": "Kusyanto & Dini Wedding"
+  },
+  "music": {
+    "source": "/music/music.mp3",
+    "volume": 0.6,
+    "loop": true,
+    "errorMessages": {
+      "load": "Gagal memuat musik.",
+      "playback": "Pemutaran musik diblokir. Silakan coba lagi."
+    },
+    "ariaLabels": {
+      "play": "Putar musik",
+      "pause": "Hentikan musik"
+    }
+  },
+  "navigation": {
+    "items": [
+      {
+        "label": "Mempelai",
+        "href": "#mempelai"
+      },
+      {
+        "label": "Acara",
+        "href": "#acara"
+      },
+      {
+        "label": "Hadiah",
+        "href": "#gift"
+      },
+      {
+        "label": "Ucapan",
+        "href": "#rsvp"
+      }
+    ]
+  }
+}
+

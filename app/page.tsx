@@ -37,9 +37,7 @@ const Page = () => {
         )}
         {isOpen && (
           <>
-            <section className="flex justify-center bg-[#f9f6f1]/90">
-              <Greetings />
-            </section>
+            <Greetings />
             <QuotesSection />
             <CatinSection />
             <DateSection />

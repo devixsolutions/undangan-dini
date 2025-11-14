@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useInvitation } from "@/components/invitation-context";
+import { getWeddingData } from "@/lib/data";
 
 const LOCAL_STORAGE_KEY = 'dashboard-invite-tool-state';
 
@@ -61,6 +62,7 @@ export default function Cover() {
   const { isOpen, openInvitation } = useInvitation();
   const searchParams = useSearchParams();
   const [guestName, setGuestName] = useState<string | null>(null);
+  const data = getWeddingData();
 
   useEffect(() => {
     const slug = searchParams.get('to');
@@ -93,7 +95,7 @@ export default function Cover() {
             className="relative h-24 w-full sm:h-28 lg:h-32"
           >
             <Image
-              src="/assets/ornamen-atas.jpg"
+              src={data.cover.assets.ornamentTop}
               alt="Ornamen atas"
               fill
               className="object-cover object-top"
@@ -137,7 +139,7 @@ export default function Cover() {
               transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
               className="font-display text-xs uppercase tracking-[0.45em] text-[#a7723a] sm:text-sm"
             >
-              Wedding Invitation
+              {data.cover.title}
             </motion.span>
 
             <motion.h1
@@ -146,7 +148,7 @@ export default function Cover() {
               transition={{ duration: 0.8, delay: 0.45, ease: "easeOut" }}
               className="font-script text-5xl leading-tight text-[#8b0000] drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] sm:text-6xl"
             >
-              Kusyanto
+              {data.wedding.groom.nickname}
             </motion.h1>
 
             <motion.div
@@ -164,7 +166,7 @@ export default function Cover() {
               transition={{ duration: 0.8, delay: 0.75, ease: "easeOut" }}
               className="font-script text-5xl leading-tight text-[#8b0000] drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] sm:text-6xl"
             >
-              Dini Jumartini
+              {data.wedding.bride.fullName}
             </motion.h2>
 
             {guestName ? (
@@ -178,7 +180,7 @@ export default function Cover() {
                   Kepada Yth. {guestName}
                 </p>
                 <p className="text-base text-[#7c6651] sm:text-lg">
-                  Dengan segala kerendahan hati, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.
+                  {data.cover.invitationText}
                 </p>
               </motion.div>
             ) : (
@@ -188,7 +190,7 @@ export default function Cover() {
                 transition={{ duration: 0.8, delay: 0.9, ease: "easeOut" }}
                 className="max-w-xl text-base text-[#7c6651] sm:text-lg"
               >
-                Dengan segala kerendahan hati, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.
+                {data.cover.invitationText}
               </motion.p>
             )}
 
@@ -201,7 +203,7 @@ export default function Cover() {
             onClick={openInvitation}
             disabled={isOpen}
             >
-              Buka Undangan
+              {data.cover.buttonText}
             </motion.button>
           </motion.div>
 
@@ -217,7 +219,7 @@ export default function Cover() {
               <div className="relative mx-auto w-full max-w-6xl overflow-visible">
                 <div className="relative h-48 sm:h-60 lg:h-72">
                   <Image
-                    src="/assets/bunga-1.svg"
+                    src={data.cover.assets.flowerBottom}
                     alt="Ornamen bunga"
                     fill
                     className="object-cover object-bottom"

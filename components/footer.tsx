@@ -1,5 +1,6 @@
 
 import Image from "next/image";
+import { getWeddingData } from "@/lib/data";
 
 const BACKGROUND_GRADIENT =
   "bg-linear-to-b from-[#fdf6f0] via-[#f5e7dc] to-[#f9f0e7]";
@@ -7,6 +8,7 @@ const TEXT_PRIMARY = "text-[#5d4636]";
 const TEXT_EMPHASIS = "text-[#8b0000]";
 
 export default function Footer() {
+  const data = getWeddingData();
   return (
     <footer
       className={`relative px-6 py-20 sm:px-10 ${BACKGROUND_GRADIENT} ${TEXT_PRIMARY}`}
@@ -14,31 +16,29 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-white/60 to-transparent" />
       <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-8 text-center">
         <h2 className={`font-script text-4xl sm:text-5xl ${TEXT_EMPHASIS}`}>
-          Terima Kasih
+          {data.footer.heading}
         </h2>
-        <p className="max-w-xl text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i
-          berkenan hadir serta memberikan doa restu untuk keberkahan pernikahan kami.
-        </p>
-        <p className="max-w-xl text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Atas doa dan restunya, kami ucapkan terima kasih.
-        </p>
+        {data.footer.messages.map((message, index) => (
+          <p key={index} className="max-w-xl text-sm leading-relaxed text-[#7c6651] sm:text-base">
+            {message}
+          </p>
+        ))}
         <div
           className={`mt-2 font-script text-4xl text-[#8b0000] sm:text-5xl`}
         >
-          Kusyanto &amp; Dini
+          {data.wedding.coupleName}
         </div>
 
         <div className="mt-6 flex flex-col items-center gap-2 text-xs uppercase tracking-[0.35em] text-[#b18f7d] sm:text-sm">
-          <span>Digital Invitation by Devix</span>
+          <span>{data.footer.credits.text}</span>
           <a
-            href="https://devixsolution.tech"
+            href={data.footer.credits.website}
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center justify-center transition hover:opacity-100"
           >
             <Image
-              src="/assets/devix.svg"
+              src={data.footer.credits.logo}
               alt="Devix Digital Invitation"
               width={120}
               height={36}
@@ -49,8 +49,8 @@ export default function Footer() {
 
         <div className="mt-6 flex items-center gap-6">
           <SocialLink
-            href="https://www.instagram.com"
-            ariaLabel="Instagram"
+            href={data.footer.social.instagram.url}
+            ariaLabel={data.footer.social.instagram.label}
             icon={
               <svg
                 viewBox="0 0 24 24"
@@ -68,8 +68,8 @@ export default function Footer() {
             }
           />
           <SocialLink
-            href="https://wa.me/6281234567890"
-            ariaLabel="WhatsApp"
+            href={data.footer.social.whatsapp.url}
+            ariaLabel={data.footer.social.whatsapp.label}
             icon={
               <svg
                 viewBox="0 0 24 24"
@@ -81,8 +81,8 @@ export default function Footer() {
             }
           />
           <SocialLink
-            href="mailto:halo@devixsolution.tech"
-            ariaLabel="Email"
+            href={data.footer.social.email.url}
+            ariaLabel={data.footer.social.email.label}
             icon={
               <svg
                 viewBox="0 0 24 24"
@@ -101,7 +101,7 @@ export default function Footer() {
         </div>
 
         <p className="mt-10 text-[11px] uppercase tracking-[0.35em] text-[#bfa591]">
-          &copy; {new Date().getFullYear()} Kusyanto &amp; Dini Wedding
+          &copy; {new Date().getFullYear()} {data.footer.copyright}
         </p>
       </div>
     </footer>

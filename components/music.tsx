@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Music, Pause } from "lucide-react";
 import { useInvitation } from "@/components/invitation-context";
-
-const MUSIC_SOURCE ="/music/bgmusci.mp3";
+import { getWeddingData } from "@/lib/data";
 
 export default function MusicToggle() {
   const { isOpen } = useInvitation();
+  const data = getWeddingData();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -25,17 +25,27 @@ export default function MusicToggle() {
       return;
     }
 
-    const audio = new Audio(MUSIC_SOURCE);
-    audio.loop = true;
+    const audio = new Audio(data.music.source);
+    audio.loop = data.music.loop;
     audio.preload = "auto";
-    audio.volume = 0.6;
+    audio.volume = data.music.volume;
 
-    const handleCanPlay = () => {
+    const handleCanPlay = async () => {
       setIsReady(true);
+      // Auto-play ketika audio sudah siap
+      try {
+        await audio.play();
+        setIsPlaying(true);
+        setError(null);
+      } catch (err) {
+        // Browser mungkin memblokir auto-play, tidak masalah
+        // User masih bisa klik tombol untuk play manual
+        console.log("Auto-play blocked, user can click to play manually");
+      }
     };
 
     const handleError = () => {
-      setError("Gagal memuat musik.");
+      setError(data.music.errorMessages.load);
     };
 
     const handleEnded = () => {
@@ -55,7 +65,7 @@ export default function MusicToggle() {
       audio.removeEventListener("ended", handleEnded);
       audioRef.current = null;
     };
-  }, [isOpen]);
+  }, [isOpen, data.music.source, data.music.loop, data.music.volume]);
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
@@ -75,7 +85,7 @@ export default function MusicToggle() {
       setError(null);
     } catch (err) {
       console.error("Failed to play audio:", err);
-      setError("Pemutaran musik diblokir. Silakan coba lagi.");
+      setError(data.music.errorMessages.playback);
     }
   };
 
@@ -93,7 +103,7 @@ export default function MusicToggle() {
         className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#8b0000] text-white shadow-lg shadow-[#8b0000]/30 transition hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] disabled:cursor-not-allowed disabled:bg-[#c28b8b]"
       >
         {isPlaying ? <Pause size={22} strokeWidth={1.8} /> : <Music size={22} strokeWidth={1.8} />}
-        <span className="sr-only">{isPlaying ? "Hentikan musik" : "Putar musik"}</span>
+        <span className="sr-only">{isPlaying ? data.music.ariaLabels.pause : data.music.ariaLabels.play}</span>
       </button>
       {error ? (
         <p className="rounded-2xl bg-white/90 px-3 py-2 text-xs text-[#8b0000] shadow-md">

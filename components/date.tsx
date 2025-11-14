@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { getWeddingData } from '@/lib/data';
 
 type TimeLeft = {
   total: number;
@@ -10,11 +11,6 @@ type TimeLeft = {
   minutes: number;
   seconds: number;
 };
-
-const EVENT_TITLE = 'Akad & Resepsi Kusyanto & Dini';
-const EVENT_LOCATION = 'Gedung Serbaguna Kec. Moga, Pemalang, Jawa Tengah';
-const EVENT_DATE = new Date('2025-02-20T08:00:00+07:00');
-const EVENT_DURATION_HOURS = 3;
 
 function calculateTimeLeft(targetDate: Date): TimeLeft {
   const total = Math.max(0, targetDate.getTime() - Date.now());
@@ -36,6 +32,12 @@ function formatICSDate(date: Date) {
 }
 
 export default function DateSection() {
+  const data = getWeddingData();
+  const EVENT_TITLE = data.wedding.event.title;
+  const EVENT_LOCATION = data.wedding.event.locationShort;
+  const EVENT_DATE = new Date(data.wedding.event.dateISO);
+  const EVENT_DURATION_HOURS = data.wedding.event.durationHours;
+
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
     calculateTimeLeft(EVENT_DATE),
   );
@@ -83,7 +85,7 @@ export default function DateSection() {
       `DTEND:${formatICSDate(eventEnd)}`,
       `SUMMARY:${EVENT_TITLE}`,
       `LOCATION:${EVENT_LOCATION}`,
-      'DESCRIPTION:Kami akan sangat senang jika Anda dapat hadir dan memberi doa restu.',
+      `DESCRIPTION:${data.date.icsDescription}`,
       'END:VEVENT',
       'END:VCALENDAR',
     ].join('\r\n');
@@ -109,10 +111,10 @@ export default function DateSection() {
     <section className="relative flex flex-col items-center justify-center bg-[#f5f3f0] px-6 py-16 text-center sm:px-10 lg:px-20">
       <div className="max-w-4xl">
         <span className="font-display text-xs uppercase tracking-[0.4em] text-[#a7723a] sm:text-sm">
-          Save The Date
+          {data.date.title}
         </span>
         <h2 className="mt-4 font-script text-4xl text-[#8b0000] sm:text-5xl">
-          Hitung Mundur Menuju Hari Bahagia
+          {data.date.heading}
         </h2>
         <p className="mt-3 text-sm text-[#7c6651] sm:text-base">
           {eventDateDisplay}
@@ -120,10 +122,10 @@ export default function DateSection() {
 
         <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { label: 'Hari', value: pad(timeLeft.days) },
-            { label: 'Jam', value: pad(timeLeft.hours) },
-            { label: 'Menit', value: pad(timeLeft.minutes) },
-            { label: 'Detik', value: pad(timeLeft.seconds) },
+            { label: data.date.labels.days, value: pad(timeLeft.days) },
+            { label: data.date.labels.hours, value: pad(timeLeft.hours) },
+            { label: data.date.labels.minutes, value: pad(timeLeft.minutes) },
+            { label: data.date.labels.seconds, value: pad(timeLeft.seconds) },
           ].map((item) => (
             <div
               key={item.label}
@@ -144,7 +146,7 @@ export default function DateSection() {
           onClick={handleSaveTheDate}
           className="mx-auto mt-10 inline-flex items-center gap-2 rounded-full bg-[#8b0000] px-10 py-3 text-sm font-semibold uppercase tracking-widest text-white shadow-lg shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] sm:text-base"
         >
-          Simpan Tanggalnya
+          {data.date.buttonText}
         </button>
       </div>
     </section>

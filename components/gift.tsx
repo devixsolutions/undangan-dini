@@ -3,6 +3,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { getWeddingData } from "@/lib/data";
 
 type GiftOption = {
   bank: string;
@@ -11,22 +12,9 @@ type GiftOption = {
   description?: string;
 };
 
-const giftOptions: GiftOption[] = [
-  {
-    bank: "BCA",
-    accountNumber: "1234567890",
-    accountName: "Kusyanto",
-    description: "Transfer hadiah untuk mempelai pria.",
-  },
-  {
-    bank: "BRI",
-    accountNumber: "9876543210",
-    accountName: "Dini Jumartini",
-    description: "Transfer hadiah untuk mempelai wanita.",
-  },
-];
-
 export default function GiftSection() {
+  const data = getWeddingData();
+  const giftOptions: GiftOption[] = data.gift.accounts;
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleCopy = async (accountNumber: string, index: number) => {
@@ -70,15 +58,13 @@ export default function GiftSection() {
         className="relative flex max-w-3xl flex-col items-center gap-4 text-center"
       >
         <span className="font-display text-xs uppercase tracking-[0.45em] text-[#a7723a] sm:text-sm">
-          Wedding Gift
+          {data.gift.title}
         </span>
         <h2 className="font-script text-4xl text-[#8b0000] sm:text-5xl">
-          Kado Kasih &amp; Doa
+          {data.gift.heading}
         </h2>
         <p className="text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Kehadiran dan doa restu Anda sudah menjadi hadiah terindah bagi kami.
-          Namun jika berkenan mengirimkan tanda kasih secara virtual, berikut
-          informasi rekening kami.
+          {data.gift.description}
         </p>
       </motion.div>
 
@@ -114,7 +100,7 @@ export default function GiftSection() {
                 onClick={() => handleCopy(gift.accountNumber, index)}
                 className="mx-auto inline-flex items-center gap-2 rounded-full bg-[#8b0000] px-8 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-md shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000]"
               >
-                {copiedIndex === index ? "Disalin!" : "Salin Rekening"}
+                {copiedIndex === index ? data.gift.copiedButtonText : data.gift.copyButtonText}
               </button>
             </div>
           </motion.article>
@@ -129,9 +115,7 @@ export default function GiftSection() {
         className="relative mt-16 max-w-3xl text-center"
       >
         <p className="text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Untuk kado fisik dapat dikirimkan ke alamat rumah mempelai pria di
-          RT 05/RW 03, Desa Banyumudal, Kecamatan Moga, Kabupaten Pemalang.
-          Silakan hubungi kami untuk koordinasi pengiriman.
+          Untuk kado fisik dapat dikirimkan ke alamat rumah mempelai pria di {data.gift.physicalGift.address} {data.gift.physicalGift.note}
         </p>
       </motion.div>
     </section>

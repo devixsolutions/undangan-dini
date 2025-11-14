@@ -1,6 +1,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
+import { getWeddingData } from '@/lib/data';
 
 type AttendanceValue = '' | 'hadir' | 'tidak_hadir';
 type ChannelValue = 'website' | 'whatsapp' | 'manual';
@@ -23,22 +24,6 @@ type Submission = {
   updatedAt: string;
 };
 
-const attendanceOptions: Array<{ value: Exclude<AttendanceValue, ''>; label: string }> = [
-  { value: 'hadir', label: 'InsyaAllah Hadir' },
-  { value: 'tidak_hadir', label: 'Belum Bisa Hadir' },
-];
-
-const attendanceLabels: Record<Exclude<AttendanceValue, ''>, string> = {
-  hadir: 'InsyaAllah Hadir',
-  tidak_hadir: 'Belum Bisa Hadir',
-};
-
-const channelLabels: Record<ChannelValue, string> = {
-  website: 'Website',
-  whatsapp: 'WhatsApp',
-  manual: 'Input Admin',
-};
-
 const dateFormatter = new Intl.DateTimeFormat('id-ID', {
   day: 'numeric',
   month: 'long',
@@ -47,6 +32,24 @@ const dateFormatter = new Intl.DateTimeFormat('id-ID', {
 });
 
 export default function RSVPSection() {
+  const data = getWeddingData();
+  
+  const attendanceOptions: Array<{ value: Exclude<AttendanceValue, ''>; label: string }> = data.rsvp.form.fields.attendance.options.map(opt => ({
+    value: opt.value as Exclude<AttendanceValue, ''>,
+    label: opt.label,
+  }));
+
+  const attendanceLabels: Record<Exclude<AttendanceValue, ''>, string> = {
+    hadir: data.rsvp.submissions.labels.hadir,
+    tidak_hadir: data.rsvp.submissions.labels.tidak_hadir,
+  };
+
+  const channelLabels: Record<ChannelValue, string> = {
+    website: data.rsvp.submissions.labels.website,
+    whatsapp: data.rsvp.submissions.labels.whatsapp,
+    manual: data.rsvp.submissions.labels.manual,
+  };
+
   const [formState, setFormState] = useState<FormState>({
     name: '',
     message: '',
@@ -84,7 +87,7 @@ export default function RSVPSection() {
         });
 
         if (!response.ok) {
-          throw new Error('Gagal memuat data RSVP.');
+          throw new Error(data.rsvp.form.errorMessages.fetch);
         }
 
         const payload = (await response.json()) as { data: Submission[] };
@@ -95,7 +98,7 @@ export default function RSVPSection() {
       } catch (err) {
         if (active) {
           console.error('Failed to fetch RSVPs', err);
-          setError('Tidak dapat memuat data RSVP saat ini.');
+          setError(data.rsvp.form.errorMessages.fetchGeneric);
         }
       } finally {
         if (active) {
@@ -163,20 +166,20 @@ export default function RSVPSection() {
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        throw new Error(payload.error ?? 'Gagal mengirim RSVP.');
+        throw new Error(payload.error ?? data.rsvp.form.errorMessages.submit);
       }
 
       const payload = (await response.json()) as { data: Submission };
 
       setSubmissions((prev) => [payload.data, ...prev]);
-      setFeedback('Terima kasih! RSVP Anda sudah kami terima.');
+      setFeedback(data.rsvp.form.successMessage);
       resetForm();
     } catch (err) {
       console.error('Failed to submit RSVP', err);
       setError(
         err instanceof Error
           ? err.message
-          : 'Maaf, terjadi kendala. Silakan coba kembali.',
+          : data.rsvp.form.errorMessages.submitGeneric,
       );
     } finally {
       setIsSubmitting(false);
@@ -206,14 +209,13 @@ export default function RSVPSection() {
         className="flex flex-col items-center gap-4 text-center"
       >
         <span className="font-display text-xs uppercase tracking-[0.45em] text-[#a7723a] sm:text-sm">
-          RSVP
+          {data.rsvp.title}
         </span>
         <h2 className="font-script text-4xl text-[#8b0000] sm:text-5xl">
-          Konfirmasi Kehadiran
+          {data.rsvp.heading}
         </h2>
         <p className="max-w-2xl text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Sampaikan rencana kehadiran, ucapan, dan doa restu Anda kepada kami.
-          RSVP ini membantu kami menyiapkan hari bahagia dengan lebih baik.
+          {data.rsvp.description}
         </p>
       </motion.div>
 
@@ -228,14 +230,14 @@ export default function RSVPSection() {
         <div className="grid gap-6 sm:grid-cols-2">
           <label className="flex flex-col gap-2 text-left">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
-              Nama Lengkap
+              {data.rsvp.form.fields.name.label}
             </span>
             <input
               type="text"
               name="name"
               value={formState.name}
               onChange={handleChange}
-              placeholder="Tuliskan nama Anda"
+              placeholder={data.rsvp.form.fields.name.placeholder}
               autoComplete="name"
               className="rounded-2xl border border-[#eadacc] bg-white/90 px-4 py-3 text-sm text-[#5d4a3a] outline-none transition focus:border-[#8b0000] focus:ring-2 focus:ring-[#8b0000]/20 sm:text-base"
               required
@@ -244,7 +246,7 @@ export default function RSVPSection() {
 
           <label className="flex flex-col gap-2 text-left">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
-              Jumlah Tamu
+              {data.rsvp.form.fields.guestCount.label}
             </span>
             <input
               type="number"
@@ -259,7 +261,7 @@ export default function RSVPSection() {
 
         <fieldset className="flex flex-col gap-3">
           <legend className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
-            Konfirmasi Kehadiran
+            {data.rsvp.form.fields.attendance.label}
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {attendanceOptions.map((option) => (
@@ -288,13 +290,13 @@ export default function RSVPSection() {
 
         <label className="flex flex-col gap-2 text-left">
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a7723a]">
-            Ucapan &amp; Doa
+            {data.rsvp.form.fields.message.label}
           </span>
           <textarea
             name="message"
             value={formState.message}
             onChange={handleChange}
-            placeholder="Tulis ucapan dan doa terbaik untuk kedua mempelai di sini"
+            placeholder={data.rsvp.form.fields.message.placeholder}
             rows={4}
             className="rounded-2xl border border-[#eadacc] bg-white/90 px-4 py-3 text-sm text-[#5d4a3a] outline-none transition focus:border-[#8b0000] focus:ring-2 focus:ring-[#8b0000]/20 sm:text-base"
           />
@@ -302,15 +304,14 @@ export default function RSVPSection() {
 
         <div className="relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
           <p className="text-xs text-[#7c6651] sm:text-sm">
-            Mohon klik tombol kirim setelah mengisi data. Terima kasih telah
-            meluangkan waktu untuk berbagi doa dan konfirmasi kehadiran Anda.
+            {data.rsvp.form.helperText}
           </p>
           <button
             type="submit"
             disabled={!isValid || isSubmitting}
             className="relative z-20 inline-flex items-center justify-center gap-2 rounded-full bg-[#8b0000] px-8 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-white shadow-lg shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] disabled:cursor-not-allowed disabled:bg-[#b57a7a] disabled:opacity-60 disabled:shadow-none disabled:hover:translate-y-0 sm:text-base"
           >
-            {isSubmitting ? 'Mengirim...' : 'Kirim RSVP'}
+            {isSubmitting ? data.rsvp.form.buttonTextSubmitting : data.rsvp.form.buttonText}
           </button>
         </div>
 
@@ -336,14 +337,14 @@ export default function RSVPSection() {
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-center font-display text-xs uppercase tracking-[0.35em] text-[#a7723a] sm:text-sm">
-            Ucapan Terbaru
+            {data.rsvp.submissions.title}
           </h3>
           <p className="text-center text-xs text-[#7c6651] sm:text-sm sm:text-right">
             {isLoading
-              ? 'Memuat data RSVP...'
+              ? data.rsvp.submissions.loading
               : submissions.length > 0
-                ? `${submissions.length} ucapan tersimpan`
-                : 'Belum ada RSVP tercatat.'}
+                ? `${submissions.length} ${data.rsvp.submissions.count}`
+                : data.rsvp.submissions.empty}
           </p>
         </div>
 
@@ -363,7 +364,7 @@ export default function RSVPSection() {
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[#a7723a] sm:text-sm">
                   <span>{channelLabels[item.channel]}</span>
-                  <span>{item.guestCount > 0 ? `${item.guestCount} tamu` : 'Tanpa rombongan'}</span>
+                  <span>{item.guestCount > 0 ? `${item.guestCount} ${data.rsvp.submissions.labels.guests}` : data.rsvp.submissions.labels.noGuests}</span>
                   <span>{dateFormatter.format(new Date(item.createdAt))}</span>
                 </div>
               </article>

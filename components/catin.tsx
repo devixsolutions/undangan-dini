@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
+import { getWeddingData } from "@/lib/data";
 
 type Person = {
   role: "Mempelai Pria" | "Mempelai Wanita";
@@ -10,24 +11,25 @@ type Person = {
   nickname?: string;
 };
 
-const brideAndGroom: Person[] = [
-  {
-    role: "Mempelai Pria",
-    nickname: "Kusyanto",
-    fullName: "Kusyanto, S.Pd.",
-    parentPrefix: "Putra dari",
-    parents: ["Bapak Sutarto", "Ibu Sri Wahyuni"],
-  },
-  {
-    role: "Mempelai Wanita",
-    nickname: "Dini",
-    fullName: "Dini Jumartini, S.E.",
-    parentPrefix: "Putri dari",
-    parents: ["Bapak Suwarno", "Ibu Siti Qomariyah"],
-  },
-];
-
 export default function CatinSection() {
+  const data = getWeddingData();
+  
+  const brideAndGroom: Person[] = [
+    {
+      role: "Mempelai Pria",
+      nickname: data.wedding.groom.nickname,
+      fullName: data.wedding.groom.fullName,
+      parentPrefix: data.wedding.groom.parentPrefix as "Putra dari" | "Putri dari",
+      parents: data.wedding.groom.parents,
+    },
+    {
+      role: "Mempelai Wanita",
+      nickname: data.wedding.bride.nickname,
+      fullName: data.wedding.bride.fullName,
+      parentPrefix: data.wedding.bride.parentPrefix as "Putra dari" | "Putri dari",
+      parents: data.wedding.bride.parents,
+    },
+  ];
   return (
     <section
       id="mempelai"
@@ -51,15 +53,13 @@ export default function CatinSection() {
         className="flex flex-col items-center gap-4 text-center"
       >
         <span className="font-display text-xs uppercase tracking-[0.45em] text-[#a7723a] sm:text-sm">
-          Mempelai
+          {data.catin.title}
         </span>
         <h2 className="font-script text-4xl text-[#8b0000] sm:text-5xl">
-          Catin Kami
+          {data.catin.heading}
         </h2>
         <p className="max-w-2xl text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Dengan ridho Allah SWT serta doa restu dari orang tua dan sahabat semua,
-          kami mempersembahkan seuntai kisah yang akan kami lanjutkan menuju
-          pernikahan.
+          {data.catin.description}
         </p>
       </motion.div>
 

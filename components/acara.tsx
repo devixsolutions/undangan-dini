@@ -2,29 +2,15 @@
 'use client';
 
 import { motion } from "framer-motion";
-
-const EVENT_DAY = "Kamis";
-const EVENT_DATE = "20 Februari 2025";
-const EVENT_LOCATION = "Gedung Serbaguna Kecamatan Moga, Pemalang, Jawa Tengah";
-const GOOGLE_MAPS_URL =
-  "https://www.google.com/maps/search/?api=1&query=Gedung+Serbaguna+Kecamatan+Moga+Pemalang";
-
-const schedule = [
-  {
-    title: "Akad Nikah",
-    time: "08.00 - 09.00 WIB",
-    description:
-      "Prosesi sakral pernikahan dengan keluarga inti dan saksi.",
-  },
-  {
-    title: "Resepsi Pernikahan",
-    time: "10.00 - 13.00 WIB",
-    description:
-      "Silaturahmi sekaligus ungkapan rasa syukur bersama kerabat dan sahabat.",
-  },
-];
+import { getWeddingData } from "@/lib/data";
 
 export default function AcaraSection() {
+  const data = getWeddingData();
+  const EVENT_DAY = data.wedding.event.day;
+  const EVENT_DATE = data.wedding.event.date;
+  const EVENT_LOCATION = data.wedding.event.location;
+  const GOOGLE_MAPS_URL = data.wedding.event.googleMapsUrl;
+  const schedule = data.wedding.event.schedule;
   return (
     <section
       id="acara"
@@ -48,10 +34,10 @@ export default function AcaraSection() {
         className="flex flex-col items-center gap-4 text-center"
       >
         <span className="font-display text-xs uppercase tracking-[0.45em] text-[#a7723a] sm:text-sm">
-          Rangkaian Acara
+          {data.acara.title}
         </span>
         <h2 className="font-script text-4xl text-[#8b0000] sm:text-5xl">
-          Hari Bahagia Kami
+          {data.acara.heading}
         </h2>
         <p className="text-sm text-[#7c6651] sm:text-base">
           {EVENT_DAY}, {EVENT_DATE}
@@ -100,7 +86,7 @@ export default function AcaraSection() {
           rel="noopener noreferrer"
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#8b0000] px-10 py-3 text-sm font-semibold uppercase tracking-widest text-white shadow-lg shadow-[#8b0000]/30 transition-transform hover:-translate-y-1 hover:bg-[#700000] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b0000] sm:text-base"
         >
-          Buka Google Maps
+          {data.acara.buttonText}
         </a>
       </motion.div>
     </section>
