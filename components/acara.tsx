@@ -60,7 +60,10 @@ export default function AcaraSection() {
                 {item.title}
               </h3>
               <p className="font-script text-3xl text-[#8b0000] sm:text-4xl">
-                {item.time}
+                {item.time.split(' WIB')[0]}
+                <span className="font-display text-base text-[#8b0000]/70 sm:text-lg ml-2 italic">
+                  {' WIB'}
+                </span>
               </p>
               <p className="text-sm leading-relaxed text-[#7c6651] sm:text-base">
                 {item.description}
