@@ -106,18 +106,6 @@ export default function GiftSection() {
           </motion.article>
         ))}
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 32 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.25 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-        className="relative mt-16 max-w-3xl text-center"
-      >
-        <p className="text-sm leading-relaxed text-[#7c6651] sm:text-base">
-          Untuk kado fisik dapat dikirimkan ke alamat rumah mempelai pria di {data.gift.physicalGift.address} {data.gift.physicalGift.note}
-        </p>
-      </motion.div>
     </section>
   );
 }

@@ -4,7 +4,7 @@
       "nickname": "Yanto",
       "fullName": "Kusyanto",
       "parentPrefix": "Putra dari",
-      "parents": ["Bapak Cahyan", "Ibu Siti Rohmah"]
+      "parents": ["Bapak Cahyan", "Ibu Dede Siti Rohmah"]
     },
     "bride": {
       "nickname": "Dini",
@@ -87,16 +87,10 @@
     },
     "accounts": [
       {
-        "bank": "BCA",
-        "accountNumber": "1234567890",
-        "accountName": "Kusyanto",
-        "description": "Transfer hadiah untuk mempelai pria."
-      },
-      {
-        "bank": "BRI",
-        "accountNumber": "9876543210",
+        "bank": "DANA",
+        "accountNumber": "085723757597",
         "accountName": "Dini Jumartini",
-        "description": "Transfer hadiah untuk mempelai wanita."
+        "description": "Transfer hadiah untuk mempelai pria."
       }
     ],
     "copyButtonText": "Salin Rekening",

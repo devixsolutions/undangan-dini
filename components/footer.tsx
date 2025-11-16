@@ -47,86 +47,12 @@ export default function Footer() {
           </a>
         </div>
 
-        <div className="mt-6 flex items-center gap-6">
-          <SocialLink
-            href={data.footer.social.instagram.url}
-            ariaLabel={data.footer.social.instagram.label}
-            icon={
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                <rect x="2" y="2" width="20" height="20" rx="5" />
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                <path d="M17.5 6.5h.01" />
-              </svg>
-            }
-          />
-          <SocialLink
-            href={data.footer.social.whatsapp.url}
-            ariaLabel={data.footer.social.whatsapp.label}
-            icon={
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-              >
-                <path d="M20.52 3.48A11.78 11.78 0 0 0 12.02 0h-.04C5.33.02 0 5.37 0 12.06a11.9 11.9 0 0 0 1.61 6L0 24l6.09-1.59a12.03 12.03 0 0 0 5.93 1.56h.05c6.68-.02 12.02-5.37 12.02-12.06 0-3.22-1.25-6.24-3.57-8.43Zm-8.5 18.75h-.04a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.61.94.96-3.52-.24-.36a9.85 9.85 0 0 1-1.55-5.35c0-5.45 4.42-9.88 9.84-9.9h.04c2.63 0 5.11 1.02 6.97 2.86a9.88 9.88 0 0 1 2.89 7.02c-.01 5.45-4.43 9.88-9.86 9.9Zm5.44-7.37c-.3-.15-1.79-.88-2.06-.98-.28-.1-.48-.15-.67.15-.2.3-.77.98-.94 1.18-.17.2-.35.22-.65.07-.3-.15-1.27-.46-2.42-1.46-.9-.8-1.52-1.79-1.7-2.09-.18-.3-.02-.46.13-.61.13-.13.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.48-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1-1.04 2.44s1.07 2.83 1.22 3.02c.15.2 2.1 3.21 5.06 4.5.7.3 1.24.47 1.66.6.7.22 1.33.19 1.84.12.56-.08 1.79-.73 2.04-1.43.25-.7.25-1.3.17-1.43-.07-.13-.27-.2-.57-.35Z" />
-              </svg>
-            }
-          />
-          <SocialLink
-            href={data.footer.social.email.url}
-            ariaLabel={data.footer.social.email.label}
-            icon={
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m22 6-10 7L2 6" />
-              </svg>
-            }
-          />
-        </div>
-
-        <p className="mt-10 text-[11px] uppercase tracking-[0.35em] text-[#bfa591]">
+        <p className="mb-10 text-[11px] uppercase tracking-[0.35em] text-[#bfa591]">
           &copy; {new Date().getFullYear()} {data.footer.copyright}
         </p>
       </div>
     </footer>
   );
 }
-
-type SocialLinkProps = {
-  href: string;
-  ariaLabel: string;
-  icon: React.ReactNode;
-};
-
-function SocialLink({ href, ariaLabel, icon }: SocialLinkProps) {
-  return (
-    <a
-      href={href}
-      aria-label={ariaLabel}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-[#8b0000] shadow-sm transition hover:-translate-y-1 hover:bg-white hover:text-[#700000]"
-    >
-      {icon}
-    </a>
-  );
-}
-
 
 
