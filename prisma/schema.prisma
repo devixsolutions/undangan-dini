@@ -37,3 +37,14 @@ model Rsvp {
   @@index([createdAt], name: "rsvps_created_at_idx")
   @@index([attendance], name: "rsvps_attendance_idx")
 }
+
+model Guest {
+  id         String   @id @default(uuid())
+  name       String
+  inviteLink String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("guests")
+  @@index([name], name: "guests_name_idx")
+}

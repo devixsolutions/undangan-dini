@@ -7,56 +7,13 @@ import { motion } from "framer-motion";
 import { useInvitation } from "@/components/invitation-context";
 import { getWeddingData } from "@/lib/data";
 
-const LOCAL_STORAGE_KEY = 'dashboard-invite-tool-state';
-
-type StoredGuest = {
+type GuestResource = {
   id: string;
   name: string;
-  slug: string;
-  createdAt: number;
+  inviteLink: string;
+  createdAt: string;
+  updatedAt: string;
 };
-
-function getGuestNameFromSlug(slug: string): string | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!storedValue) {
-      return null;
-    }
-
-    const parsed = JSON.parse(storedValue) as {
-      guests?: unknown;
-    };
-
-    if (Array.isArray(parsed.guests)) {
-      const guest = parsed.guests.find(
-        (item) =>
-          item &&
-          typeof item === 'object' &&
-          typeof (item as { slug?: unknown }).slug === 'string' &&
-          (item as { slug: string }).slug === slug,
-      ) as StoredGuest | undefined;
-
-      if (guest && typeof guest.name === 'string') {
-        return guest.name;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to get guest name from slug', err);
-  }
-
-  return null;
-}
-
-function formatSlugToName(slug: string): string {
-  return slug
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
 
 export default function Cover() {
   const { isOpen, openInvitation } = useInvitation();
@@ -65,20 +22,58 @@ export default function Cover() {
   const data = getWeddingData();
 
   useEffect(() => {
+    let active = true;
     const slug = searchParams.get('to');
+    const resetName = () => {
+      if (active) {
+        setGuestName(null);
+      }
+    };
+
     if (!slug) {
-      setGuestName(null);
+      resetName();
       return;
     }
 
-    const decodedSlug = decodeURIComponent(slug);
-    const nameFromStorage = getGuestNameFromSlug(decodedSlug);
-    
-    if (nameFromStorage) {
-      setGuestName(nameFromStorage);
-    } else {
-      setGuestName(formatSlugToName(decodedSlug));
+    const decodedName = decodeURIComponent(slug).trim();
+    if (!decodedName) {
+      resetName();
+      return;
     }
+
+    // Default to decoded name while fetching from server
+    setGuestName(decodedName);
+
+    const fetchGuest = async () => {
+      try {
+        const response = await fetch(
+          `/api/guests?name=${encodeURIComponent(decodedName)}`,
+          {
+            cache: 'no-store',
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch guest data.');
+        }
+
+        const payload = (await response.json()) as {
+          data: GuestResource[];
+        };
+
+        if (payload.data.length > 0 && active) {
+          setGuestName(payload.data[0].name);
+        }
+      } catch (error) {
+        console.error('Failed to fetch guest name', error);
+      }
+    };
+
+    fetchGuest();
+
+    return () => {
+      active = false;
+    };
   }, [searchParams]);
 
   return (

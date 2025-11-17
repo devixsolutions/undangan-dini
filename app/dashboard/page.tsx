@@ -16,6 +16,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
+import { getWeddingData } from '@/lib/data';
 
 type AttendanceStatus = 'hadir' | 'tidak_hadir';
 type ChannelSource = 'website' | 'whatsapp' | 'manual';
@@ -51,37 +52,65 @@ type InvitationTemplate = {
 type StoredGuest = {
   id: string;
   name: string;
-  slug: string;
-  createdAt: number;
+  inviteLink: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type GeneratedGuest = StoredGuest & {
-  inviteLink: string;
   personalizedText: string;
 };
 
+const weddingData = getWeddingData();
+const coupleName = weddingData.wedding.coupleName;
+const weddingEventDate = weddingData.wedding.event.date;
+const weddingEventLocation = weddingData.wedding.event.locationShort ?? weddingData.wedding.event.location;
+
 const defaultFormalTemplate = [
-  'Yth. [nama],',
+  'Kepada Yth.',
+  'Bapak/Ibu/Saudara/i [nama]',
+  '[custom-subtitle]', // contoh: Alumni XII -1 ATU
+  '__________________________________________',
   '',
-  'Dengan hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara pernikahan kami.',
+  'Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i, teman sekaligus sahabat, untuk menghadiri acara pernikahan kami.',
   '',
-  'Silakan akses undangan digital berikut untuk detail acara dan konfirmasi kehadiran:',
+  'Berikut link undangan kami, untuk info lengkap dari acara, bisa kunjungi:',
   '[link-undangan]',
   '',
-  'Atas kehadiran dan doa restu Bapak/Ibu/Saudara/i kami ucapkan terima kasih.',
+  'Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.',
+  '',
+  'Mohon maaf perihal undangan hanya dibagikan melalui pesan ini.',
+  '',
+  'Hormat Kami,',
+  '[mempelai]',
+  '',
+  'Terima Kasih',
 ].join('\n');
 
 const defaultMuslimTemplate = [
-  'Assalamualaikum Warahmatullahi Wabarakatuh,',
+  'Assalamualaikum Warahmatullahi Wabarokatuh',
+  'Kepada Yth.',
+  'Bapak/Ibu/Saudara/i [nama]',
+  
+  '__________________________________________',
   '',
-  'Dengan memohon rahmat dan ridha Allah SWT, kami bermaksud mengundang [nama] untuk hadir memberikan doa restu pada acara pernikahan kami.',
+  'Dengan memohon rahmat dan ridho Allah SWT.',
+  'Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i, teman sekaligus sahabat, untuk menghadiri acara pernikahan kami.',
   '',
-  'Detail acara dan konfirmasi kehadiran dapat dilihat melalui tautan berikut:',
+  'Berikut link undangan kami, untuk info lengkap dari acara, bisa kunjungi:',
   '[link-undangan]',
   '',
-  'Atas perhatian dan kehadirannya, kami ucapkan Jazakumullahu Khairan.',
-  'Wassalamualaikum Warahmatullahi Wabarakatuh.',
+  'Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.',
+  '',
+  'Mohon maaf perihal undangan hanya dibagikan melalui pesan ini.',
+  '',
+  'Hormat Kami,',
+  '[mempelai]',
+  '',
+  'Terima Kasih',
+  'Wassalamualaikum Warahmatullahi Wabarokatuh',
 ].join('\n');
+
 
 const invitationTemplates: readonly InvitationTemplate[] = [
   {
@@ -186,6 +215,7 @@ export default function DashboardPage() {
     }
   }, []);
 
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -200,7 +230,6 @@ export default function DashboardPage() {
       const parsed = JSON.parse(storedValue) as {
         rawGuestNames?: unknown;
         introText?: unknown;
-        guests?: unknown;
       };
 
       if (typeof parsed.rawGuestNames === 'string') {
@@ -210,35 +239,6 @@ export default function DashboardPage() {
       if (typeof parsed.introText === 'string') {
         setIntroText(parsed.introText);
         setSelectedTemplateKey(detectTemplateKey(parsed.introText));
-      }
-
-      if (Array.isArray(parsed.guests)) {
-        const restoredGuests = parsed.guests
-          .map((item) => {
-            if (
-              item &&
-              typeof item === 'object' &&
-              typeof (item as { id?: unknown }).id === 'string' &&
-              typeof (item as { name?: unknown }).name === 'string' &&
-              typeof (item as { slug?: unknown }).slug === 'string'
-            ) {
-              return {
-                id: (item as { id: string }).id,
-                name: (item as { name: string }).name,
-                slug: (item as { slug: string }).slug,
-                createdAt:
-                  typeof (item as { createdAt?: unknown }).createdAt === 'number'
-                    ? (item as { createdAt: number }).createdAt
-                    : Date.now(),
-              };
-            }
-            return null;
-          })
-          .filter((guest): guest is StoredGuest => guest !== null);
-
-        if (restoredGuests.length > 0) {
-          setStoredGuests(restoredGuests);
-        }
       }
     } catch (err) {
       console.error('Failed to restore invite tool data', err);
@@ -253,11 +253,10 @@ export default function DashboardPage() {
     const payload = JSON.stringify({
       rawGuestNames,
       introText,
-      guests: storedGuests,
     });
 
     window.localStorage.setItem(LOCAL_STORAGE_KEY, payload);
-  }, [rawGuestNames, introText, storedGuests]);
+  }, [rawGuestNames, introText]);
 
   useEffect(() => {
     return () => {
@@ -279,24 +278,18 @@ export default function DashboardPage() {
 
   const generatedGuests = useMemo<GeneratedGuest[]>(
     () =>
-      storedGuests.map((guest) => {
-        const inviteLink = shareLink
-          ? `${shareLink}/?to=${encodeURIComponent(guest.slug)}`
-          : '';
-        return {
-          ...guest,
-          inviteLink,
-          personalizedText: buildPersonalizedText(
-            introText,
-            guest.name,
-            inviteLink,
-          ),
-        };
-      }),
-    [storedGuests, introText, shareLink],
+      storedGuests.map((guest) => ({
+        ...guest,
+        personalizedText: buildPersonalizedText(
+          introText,
+          guest.name,
+          guest.inviteLink,
+        ),
+      })),
+    [storedGuests, introText],
   );
 
-  const hasGeneratedGuests = generatedGuests.length > 0;
+  const hasGeneratedGuests = storedGuests.length > 0;
 
   const showStatus = useCallback((message: string) => {
     if (typeof window === 'undefined') {
@@ -313,6 +306,33 @@ export default function DashboardPage() {
       feedbackTimeoutRef.current = null;
     }, 4000);
   }, []);
+
+  const fetchGuests = useCallback(async () => {
+    try {
+      const response = await fetch('/api/guests', {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal memuat daftar tamu.');
+      }
+
+      const payload = (await response.json()) as {
+        data: StoredGuest[];
+      };
+
+      setStoredGuests(payload.data);
+    } catch (error) {
+      console.error('Failed to fetch guests', error);
+      showStatus(
+        error instanceof Error ? error.message : 'Gagal memuat daftar tamu.',
+      );
+    }
+  }, [showStatus]);
+
+  useEffect(() => {
+    void fetchGuests();
+  }, [fetchGuests]);
 
   const handleIntroTextChange = useCallback(
     (value: string) => {
@@ -342,7 +362,7 @@ export default function DashboardPage() {
     [showStatus],
   );
 
-  const handleGenerateGuestList = useCallback(() => {
+  const handleGenerateGuestList = useCallback(async () => {
     const names = parseGuestNames(rawGuestNames);
 
     if (names.length === 0) {
@@ -350,27 +370,48 @@ export default function DashboardPage() {
       return;
     }
 
-    const slugSet = new Set<string>();
-    const guests = names.map((name, index) => {
-      const baseSlug = slugify(name);
-      const uniqueSlug = ensureUniqueSlug(
-        baseSlug || `tamu-${index + 1}`,
-        slugSet,
+    if (!shareLink) {
+      showStatus(
+        'Link undangan belum siap. Pastikan halaman dibuka melalui domain undangan.',
       );
-      slugSet.add(uniqueSlug);
+      return;
+    }
 
-      return {
-        id: generateGuestId(index),
-        name,
-        slug: uniqueSlug,
-        createdAt: Date.now() + index,
-      };
-    });
+    try {
+      await Promise.all(
+        names.map(async (name) => {
+          const inviteLink = `${shareLink}/?to=${encodeURIComponent(name)}`;
 
-    setStoredGuests(guests);
-    setRawGuestNames(names.join('\n'));
-    showStatus('Daftar tamu berhasil dibuat.');
-  }, [rawGuestNames, showStatus]);
+          const response = await fetch('/api/guests', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name,
+              inviteLink,
+            }),
+          });
+
+          if (!response.ok) {
+            const payload = (await response.json().catch(() => null)) as
+              | { error?: string }
+              | null;
+            throw new Error(payload?.error ?? 'Gagal menyimpan data tamu.');
+          }
+        }),
+      );
+
+      await fetchGuests();
+      setRawGuestNames(names.join('\n'));
+      showStatus('Daftar tamu berhasil disimpan.');
+    } catch (error) {
+      console.error('Failed to save guests', error);
+      showStatus(
+        error instanceof Error ? error.message : 'Gagal menyimpan data tamu.',
+      );
+    }
+  }, [rawGuestNames, shareLink, fetchGuests, showStatus]);
 
   const handleSendWhatsApp = useCallback(
     (guest: GeneratedGuest) => {
@@ -436,9 +477,27 @@ export default function DashboardPage() {
   );
 
   const handleRemoveGuest = useCallback(
-    (guest: GeneratedGuest) => {
-      setStoredGuests((prev) => prev.filter((item) => item.id !== guest.id));
-      showStatus(`${guest.name} dihapus dari daftar tamu.`);
+    async (guest: GeneratedGuest) => {
+      try {
+        const response = await fetch(`/api/guests/${guest.id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as
+            | { error?: string }
+            | null;
+          throw new Error(payload?.error ?? 'Gagal menghapus data tamu.');
+        }
+
+        setStoredGuests((prev) => prev.filter((item) => item.id !== guest.id));
+        showStatus(`${guest.name} dihapus dari daftar tamu.`);
+      } catch (error) {
+        console.error('Failed to delete guest', error);
+        showStatus(
+          error instanceof Error ? error.message : 'Gagal menghapus data tamu.',
+        );
+      }
     },
     [showStatus],
   );
@@ -448,16 +507,12 @@ export default function DashboardPage() {
       return '';
     }
 
-    const coupleNames = 'Kusyanto & Dini Jumartini';
-    const eventDate = 'Sabtu, 12 April 2025';
-    const eventLocation = 'Gedung Graha Saba Buana — Surakarta';
-
     return [
       'Assalamualaikum Warahmatullahi Wabarakatuh.',
       'Dengan penuh rasa syukur, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami.',
-      coupleNames,
-      eventDate,
-      eventLocation,
+      coupleName,
+      weddingEventDate,
+      weddingEventLocation,
       '',
       'Silakan buka undangan digital lengkap serta konfirmasi kehadiran melalui tautan berikut:',
       `${shareLink}/`,
@@ -1122,39 +1177,20 @@ function slugify(input: string) {
     .replace(/^-+|-+$/g, '');
 }
 
-function ensureUniqueSlug(base: string, used: Set<string>) {
-  let slug = base;
-  let counter = 2;
-
-  while (used.has(slug)) {
-    slug = `${base}-${counter}`;
-    counter += 1;
-  }
-
-  return slug;
-}
-
-function generateGuestId(index: number) {
-  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
-
-  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
-    return cryptoApi.randomUUID();
-  }
-
-  return `guest-${Date.now()}-${index + 1}`;
-}
-
 function buildPersonalizedText(template: string, name: string, link: string) {
   const safeName = name.trim() || 'Tamu Undangan';
   const safeLink = link.trim();
   const hasNamePlaceholder = /\[nama\]/iu.test(template);
   const hasLinkPlaceholder = /\[link-undangan\]/iu.test(template);
+  const couplePlaceholder = coupleName || 'Mempelai';
 
   let result = template || '';
 
   result = result.replace(/\[nama\]/giu, safeName);
   const linkReplacement = safeLink || 'Link undangan akan menyusul.';
   result = result.replace(/\[link-undangan\]/giu, linkReplacement);
+  result = result.replace(/\[mempelai\]/giu, couplePlaceholder);
+  result = result.replace(/\[custom-subtitle\]/giu, '');
 
   if (!hasNamePlaceholder) {
     result = [`Yth. ${safeName},`, '', result].join('\n');
